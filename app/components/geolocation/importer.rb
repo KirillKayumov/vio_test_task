@@ -2,11 +2,18 @@ require 'csv'
 
 module Geolocation
   class Importer
+    BATCH_SIZE = 1000
+
+    def initialize(filepath:, batch_size: BATCH_SIZE)
+      @filepath = filepath
+      @batch_size = batch_size
+    end
+
     def call
       acc = { accepted_count: 0, rejected_count: 0, time_elapsed: 0 }
       start_time = Time.now
 
-      acc = CSV.foreach('data/test_cloud_data_dump.csv', headers: true).each_slice(1000).reduce(acc) do |acc, rows_batch|
+      acc = CSV.foreach(@filepath, headers: true).each_slice(@batch_size).reduce(acc) do |acc, rows_batch|
         valid_locations =
           rows_batch
             .filter_map do |row|

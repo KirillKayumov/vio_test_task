@@ -2,5 +2,6 @@
 # for example lib/tasks/capistrano.rake, and they will automatically be available to Rake.
 
 require_relative "config/application"
+load Rails.root.join("app", "components", "geolocation", "tasks.rake")
 
 Rails.application.load_tasks
