@@ -4,9 +4,10 @@ module Geolocation
   class Importer
     BATCH_SIZE = 1000
 
-    def initialize(filepath:, batch_size: BATCH_SIZE)
+    def initialize(filepath:, batch_size: BATCH_SIZE, repo: Persistence::Repos::LocationsRepo.new(Config.rom))
       @filepath = filepath
       @batch_size = batch_size
+      @repo = repo
     end
 
     def call
@@ -28,16 +29,16 @@ module Geolocation
 
               location if location.valid?
             end
-            .map { |location| location.slice(:ip_address, :country_code, :country, :city, :latitude, :longitude) }
+            .map { |location| location.slice(:ip_address, :country_code, :country, :city, :latitude, :longitude).as_json.merge(created_at: Time.now, updated_at: Time.now) }
 
         begin
-          result = Location.upsert_all(valid_locations, unique_by: :ip_address, on_duplicate: :skip)
+          result = @repo.import(valid_locations)
         rescue Exception => e
           :ok
         end
 
-        acc[:accepted_count] += result.rows.size
-        acc[:rejected_count] += rows_batch.size - result.rows.size
+        acc[:accepted_count] += result.size
+        acc[:rejected_count] += rows_batch.size - result.size
         acc
       end
 
