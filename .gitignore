@@ -29,3 +29,5 @@
 /config/master.key
 
 /data
+/infrastructure/.terraform
+/infrastructure/*.tfstate*
