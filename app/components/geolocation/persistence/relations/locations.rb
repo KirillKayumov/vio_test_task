@@ -10,6 +10,8 @@ module Geolocation
           attribute :city, Types::String
           attribute :latitude, Types::Float
           attribute :longitude, Types::Float
+          attribute :created_at, Types::Time
+          attribute :updated_at, Types::Time
         end
       end
     end

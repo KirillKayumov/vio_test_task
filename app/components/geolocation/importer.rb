@@ -11,40 +11,48 @@ module Geolocation
     end
 
     def call
-      acc = { accepted_count: 0, rejected_count: 0, time_elapsed: 0 }
-      start_time = Time.now
+      stats, time_elapsed = measure_time do
+        CSV.foreach(@filepath, headers: true).each_slice(@batch_size).reduce(initial_stats) do |acc, rows_batch|
+          valid_locations = rows_batch.filter_map do |row|
+            validate_row(row).then { |result| result.to_h if result.success? }
+          end
 
-      acc = CSV.foreach(@filepath, headers: true).each_slice(@batch_size).reduce(acc) do |acc, rows_batch|
-        valid_locations =
-          rows_batch
-            .filter_map do |row|
-              location = Location.new(
-                ip_address: row['ip_address'],
-                country_code: row['country_code'],
-                country: row['country'],
-                city: row['city'],
-                latitude: row['latitude'],
-                longitude: row['longitude']
-              )
+          imported_ids = @repo.import(valid_locations)
 
-              location if location.valid?
-            end
-            .map { |location| location.slice(:ip_address, :country_code, :country, :city, :latitude, :longitude).as_json.merge(created_at: Time.now, updated_at: Time.now) }
-
-        begin
-          result = @repo.import(valid_locations)
-        rescue Exception => e
-          :ok
+          acc[:accepted_count] += imported_ids.size
+          acc[:rejected_count] += rows_batch.size - imported_ids.size
+          acc
         end
-
-        acc[:accepted_count] += result.size
-        acc[:rejected_count] += rows_batch.size - result.size
-        acc
       end
 
+      stats.merge(time_elapsed: time_elapsed)
+    end
+
+    private
+
+    def initial_stats
+      { accepted_count: 0, rejected_count: 0, time_elapsed: 0 }
+    end
+
+    def validate_row(row)
+      ImportLocationContract.new.call(
+        ip_address: row['ip_address'],
+        country_code: row['country_code'],
+        country: row['country'],
+        city: row['city'],
+        latitude: row['latitude'],
+        longitude: row['longitude'],
+        created_at: Time.now,
+        updated_at: Time.now
+      )
+    end
+
+    def measure_time
+      start_time = Time.now
+      result = yield
       end_time = Time.now
 
-      acc.merge(time_elapsed: end_time - start_time)
+      [result, end_time - start_time]
     end
   end
 end

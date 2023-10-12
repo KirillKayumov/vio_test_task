@@ -60,4 +60,15 @@ RSpec.configure do |config|
   config.filter_rails_from_backtrace!
   # arbitrary gems may also be filtered via:
   # config.filter_gems_from_backtrace("gem name")
+
+  config.before do
+    DatabaseCleaner[:sequel].db = Geolocation::Config.rom.gateways[:default].connection
+    DatabaseCleaner[:sequel].start
+  end
+
+  config.after do
+    DatabaseCleaner[:sequel].clean
+  end
 end
+
+DatabaseCleaner[:sequel].strategy = :transaction

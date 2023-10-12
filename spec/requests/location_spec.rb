@@ -21,13 +21,15 @@ describe "GET /location" do
 
   context "when location is found by passed ip_address" do
     before do
-      Geolocation::Location.create!(
+      Geolocation::Persistence::Repos::LocationsRepo.new(Geolocation::Config.rom).create(
         ip_address: "127.0.0.1",
         country_code: "US",
         country: "United States",
         city: "San Francisco",
         latitude: 37.7749,
-        longitude: -122.4194
+        longitude: -122.4194,
+        created_at: Time.now,
+        updated_at: Time.now
       )
     end
 

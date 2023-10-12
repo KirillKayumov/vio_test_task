@@ -10,6 +10,7 @@ gem "rails", "~> 7.0.8"
 gem "pg", "~> 1.1"
 gem "rom"
 gem "rom-sql"
+gem "dry-validation"
 
 # Use the Puma web server [https://github.com/puma/puma]
 gem "puma", "~> 5.0"
@@ -43,6 +44,7 @@ group :development, :test do
   gem "debug", platforms: %i[ mri mingw x64_mingw ]
   gem "pry"
   gem "rspec-rails"
+  gem "database_cleaner-sequel"
 end
 
 group :development do
