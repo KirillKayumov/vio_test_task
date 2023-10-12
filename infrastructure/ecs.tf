@@ -6,7 +6,7 @@ resource "aws_ecs_task_definition" "app" {
   family                   = "Vio-test-task"
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
-  execution_role_arn       = "arn:aws:iam::460145940115:role/aws-service-role/ecs.amazonaws.com/AWSServiceRoleForECS"
+  execution_role_arn       = "arn:aws:iam::460145940115:role/ecsTaskExecutionRole"
 
   memory = "512"
   cpu    = "256"
@@ -18,6 +18,7 @@ resource "aws_ecs_task_definition" "app" {
       cpu       = 0
       memory    = 512
       essential = true
+      command   = ["bundle", "exec", "puma"],
       portMappings = [
         {
           containerPort = 4000
@@ -27,9 +28,26 @@ resource "aws_ecs_task_definition" "app" {
       environment = [
         {
           name  = "DATABASE_URL"
+          value = "postgres://postgres:postgres@viodb.c5htiu2ou7ka.eu-north-1.rds.amazonaws.com:5432/vio_production"
+        },
+        {
+          name  = "RAILS_ENV"
           value = "production"
-        }
+        },
+        {
+          name  = "SECRET_KEY_BASE"
+          value = "8b14f710616bec48dda30facface86a7c00ebc2dee6e19d9b49e3ae8f8138790678dfc15152f8b3175b13b76124aad40e21a38b5c4c823a0db5918e2d08cfa37"
+        },
       ]
+      logConfiguration = {
+        logDriver     = "awslogs"
+        secretOptions = null
+        options = {
+          awslogs-group         = "/ecs/App"
+          awslogs-region        = "eu-north-1"
+          awslogs-stream-prefix = "ecs"
+        }
+      }
     }
   ])
 }

@@ -10,11 +10,8 @@ COPY Gemfile* ./
 
 RUN bundle install
 
-RUN useradd rails --create-home --shell /bin/bash
-USER rails:rails
-
 ADD . /app
 
-EXPOSE 3000
+EXPOSE 4000
 
 CMD ["./bin/rails", "server"]
