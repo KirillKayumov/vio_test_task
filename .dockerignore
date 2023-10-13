@@ -32,3 +32,6 @@
 
 /infrastructure/.terraform
 /infrastructure/*.tfstate*
+
+/data
+!/data/.keep

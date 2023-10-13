@@ -13,6 +13,6 @@ services:
     ports:
       - "4000:4000"
     environment:
-      DATABASE_URL: postgres://postgres:postgres@db:5432
+      DATABASE_URL: postgres://postgres:postgres@db:5432/vio_development
     depends_on:
       - db

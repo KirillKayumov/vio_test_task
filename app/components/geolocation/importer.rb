@@ -13,6 +13,8 @@ module Geolocation
     def call
       stats, time_elapsed = measure_time do
         CSV.foreach(@filepath, headers: true).each_slice(@batch_size).reduce(initial_stats) do |acc, rows_batch|
+          print(".")
+
           valid_locations = rows_batch.filter_map do |row|
             validate_row(row).then { |result| result.to_h if result.success? }
           end

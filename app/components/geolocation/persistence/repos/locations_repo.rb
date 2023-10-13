@@ -11,7 +11,14 @@ module Geolocation
         end
 
         def find_by_ip_address(ip_address)
+          ip_address = IPAddr.new(ip_address).to_s
           locations.where(ip_address: ip_address).one
+        rescue IPAddr::InvalidAddressError
+          nil
+        end
+
+        def count
+          locations.count
         end
       end
     end
